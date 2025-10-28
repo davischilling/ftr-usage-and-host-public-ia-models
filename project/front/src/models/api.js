@@ -20,3 +20,17 @@ export const translate = async (caption) => {
     .then(response => response.json())
     .then(data => data.translations)
 }
+
+export const convertToAudio = async (textToConvert) => {
+    return fetch('http://localhost:5000/text_to_audio', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            text: textToConvert,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => data.audio_url)
+}

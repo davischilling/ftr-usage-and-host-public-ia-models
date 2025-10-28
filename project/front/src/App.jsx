@@ -1,11 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import { generateCaption, translate } from './models/api'
+import { generateCaption, translate, convertToAudio } from './models/api'
 
 function App() {
   const [imgSrc, setImgSrc] = useState(null)
   const [caption, setCaption] = useState('<Caption>')
   const [captionPTBR, setCaptionPTBR] = useState('<Legenda>')
+  const [audioSrc, setAudioSrc] = useState(null)
+
+  const captionAudio = useRef()
 
   const addCaption = async () => {
     console.log("EITA");
@@ -21,7 +24,19 @@ function App() {
     setCaptionPTBR('Traduzindo...')
     const captionTranslated = await translate(caption)
     setCaptionPTBR(captionTranslated[0].translated_text)
+
+    const audioEndpoint = await convertToAudio(captionTranslated[0].translated_text)
+    const audioSrc = `http://localhost:5000/${audioEndpoint}`
+    setAudioSrc(audioSrc)
   }
+
+  useEffect(() => {
+    if (audioSrc && captionAudio.current) {
+      captionAudio.current.pause()
+      captionAudio.current.load()
+      captionAudio.current.play()
+    }
+  }, [audioSrc]);
 
   return (
     <>
@@ -41,6 +56,9 @@ function App() {
         )}
         <span>{caption}</span>
         <span>{captionPTBR}</span>
+        <audio controls ref={captionAudio}>
+          <source src={audioSrc} />
+        </audio>
       </div>
     </>
   )
